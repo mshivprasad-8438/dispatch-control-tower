@@ -1,0 +1,12 @@
+[
+  { "orderId": "O-5001", "customerId": "C-1002", "destination": "Kakinada, AP",     "product": "Shrimp Feed CP 0.8mm", "qtyMT": 12, "orderDate": "2026-06-14", "status": "PENDING" },
+  { "orderId": "O-5002", "customerId": "C-1002", "destination": "Rajahmundry, AP",  "product": "Shrimp Feed CP 1.2mm", "qtyMT": 8,  "orderDate": "2026-06-15", "status": "PENDING" },
+  { "orderId": "O-5003", "customerId": "C-1001", "destination": "Bhimavaram, AP",   "product": "Fish Feed F-2",        "qtyMT": 20, "orderDate": "2026-06-13", "status": "PENDING" },
+  { "orderId": "O-5004", "customerId": "C-1004", "destination": "Nellore, AP",      "product": "Shrimp Feed CP 0.8mm", "qtyMT": 25, "orderDate": "2026-06-15", "status": "PENDING" },
+  { "orderId": "O-5005", "customerId": "C-1005", "destination": "Ongole, AP",       "product": "Shrimp Feed CP 1.5mm", "qtyMT": 6,  "orderDate": "2026-06-16", "status": "PENDING" },
+  { "orderId": "O-5006", "customerId": "C-1003", "destination": "Vijayawada, AP",   "product": "Fish Feed F-2",        "qtyMT": 15, "orderDate": "2026-06-12", "status": "PENDING" },
+  { "orderId": "O-5007", "customerId": "C-1004", "destination": "Nellore, AP",      "product": "Shrimp Feed CP 1.2mm", "qtyMT": 4,  "orderDate": "2026-06-16", "status": "PENDING" },
+  { "orderId": "O-5008", "customerId": "C-1006", "destination": "Chirala, AP",      "product": "Shrimp Feed CP 0.8mm", "qtyMT": 10, "orderDate": "2026-06-14", "status": "PENDING" },
+  { "orderId": "O-5009", "customerId": "C-1005", "destination": "Ongole, AP",       "product": "Shrimp Feed CP 1.5mm", "qtyMT": 18, "orderDate": "2026-06-17", "status": "PENDING" },
+  { "orderId": "O-5010", "customerId": "C-1002", "destination": "Kakinada, AP",     "product": "Shrimp Feed CP 0.8mm", "qtyMT": 10, "orderDate": "2026-06-17", "status": "PENDING" }
+]

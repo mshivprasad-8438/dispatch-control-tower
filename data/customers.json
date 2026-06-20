@@ -1,0 +1,88 @@
+[
+  {
+    "customerId": "C-1001",
+    "name": "Sri Lakshmi Aqua Farms",
+    "city": "Bhimavaram",
+    "state": "AP",
+    "creditLimit": 500000,
+    "creditDays": 30,
+    "outstandingBalance": 540000,
+    "oldestOverdueInvoiceDays": 12,
+    "deliveryLocations": [
+      { "locationId": "L-1001-1", "label": "Bhimavaram Hatchery", "city": "Bhimavaram", "state": "AP" },
+      { "locationId": "L-1001-2", "label": "Palakollu Pond Cluster", "city": "Palakollu", "state": "AP" }
+    ],
+    "_note": "BLOCKED: outstanding 540000 > limit 500000"
+  },
+  {
+    "customerId": "C-1002",
+    "name": "Godavari Aqua Exports",
+    "city": "Kakinada",
+    "state": "AP",
+    "creditLimit": 1200000,
+    "creditDays": 45,
+    "outstandingBalance": 300000,
+    "oldestOverdueInvoiceDays": 0,
+    "deliveryLocations": [
+      { "locationId": "L-1002-1", "label": "Kakinada Port Warehouse", "city": "Kakinada", "state": "AP" },
+      { "locationId": "L-1002-2", "label": "Rajahmundry Depot", "city": "Rajahmundry", "state": "AP" }
+    ],
+    "_note": "OK"
+  },
+  {
+    "customerId": "C-1003",
+    "name": "Krishna Delta Feeds",
+    "city": "Vijayawada",
+    "state": "AP",
+    "creditLimit": 800000,
+    "creditDays": 30,
+    "outstandingBalance": 250000,
+    "oldestOverdueInvoiceDays": 40,
+    "deliveryLocations": [
+      { "locationId": "L-1003-1", "label": "Vijayawada Central Store", "city": "Vijayawada", "state": "AP" }
+    ],
+    "_note": "BLOCKED: oldest overdue 40 days > credit days 30"
+  },
+  {
+    "customerId": "C-1004",
+    "name": "Coastal Shrimp Co",
+    "city": "Nellore",
+    "state": "AP",
+    "creditLimit": 400000,
+    "creditDays": 30,
+    "outstandingBalance": 380000,
+    "oldestOverdueInvoiceDays": 5,
+    "deliveryLocations": [
+      { "locationId": "L-1004-1", "label": "Nellore Farm Gate", "city": "Nellore", "state": "AP" }
+    ],
+    "_note": "OK (near limit, not over)"
+  },
+  {
+    "customerId": "C-1005",
+    "name": "Bay Harvest Aquaculture",
+    "city": "Ongole",
+    "state": "AP",
+    "creditLimit": 600000,
+    "creditDays": 30,
+    "outstandingBalance": 120000,
+    "oldestOverdueInvoiceDays": 0,
+    "deliveryLocations": [
+      { "locationId": "L-1005-1", "label": "Ongole Main Yard", "city": "Ongole", "state": "AP" }
+    ],
+    "_note": "OK"
+  },
+  {
+    "customerId": "C-1006",
+    "name": "Penna Marine Foods",
+    "city": "Chirala",
+    "state": "AP",
+    "creditLimit": 350000,
+    "creditDays": 15,
+    "outstandingBalance": 410000,
+    "oldestOverdueInvoiceDays": 20,
+    "deliveryLocations": [
+      { "locationId": "L-1006-1", "label": "Chirala Processing Unit", "city": "Chirala", "state": "AP" }
+    ],
+    "_note": "BLOCKED: over limit AND overdue"
+  }
+]

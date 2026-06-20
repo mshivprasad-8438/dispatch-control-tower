@@ -1,0 +1,7 @@
+[
+  { "vehicleNo": "AP28T-7457", "capacityMT": 20, "model": "Tata LPT 1613", "status": "Available" },
+  { "vehicleNo": "AP16U-3321", "capacityMT": 25, "model": "Ashok Leyland 2518", "status": "Available" },
+  { "vehicleNo": "AP05K-9012", "capacityMT": 16, "model": "Eicher Pro 3015", "status": "Available" },
+  { "vehicleNo": "AP37C-4456", "capacityMT": 30, "model": "BharatBenz 3123", "status": "Available" },
+  { "vehicleNo": "AP28T-1188", "capacityMT": 20, "model": "Tata LPT 1613", "status": "Planned" }
+]
