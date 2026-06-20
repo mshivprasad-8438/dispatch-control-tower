@@ -1,22 +1,31 @@
 const express = require("express");
-const { getState } = require("../data/store");
+const { CREDIT_STATUS } = require("../constants/statuses");
+const MESSAGES = require("../constants/messages");
+const { getCustomers, getOrders } = require("../data/store");
 const { getCreditStatus } = require("../services/creditService");
 
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  const state = getState();
+  const customers = getCustomers();
+  const orders = getOrders();
+  const customersById = new Map(customers.map((customer) => [customer.customerId, customer]));
 
-  const openOrders = state.orders
+  const openOrders = orders
     .filter((order) => !order.assignedPlanId)
     .map((order) => {
-      const customer = state.customers.find((item) => item.customerId === order.customerId);
-      const credit = getCreditStatus(customer);
+      const customer = customersById.get(order.customerId);
+      const credit = customer
+        ? getCreditStatus(customer)
+        : {
+            creditStatus: CREDIT_STATUS.BLOCKED,
+            creditReason: MESSAGES.CUSTOMER_DATA_MISSING(order.customerId),
+          };
 
       return {
         orderId: order.orderId,
         customerId: order.customerId,
-        customerName: customer.name,
+        customerName: customer ? customer.name : "Unknown Customer",
         destination: order.destination,
         product: order.product,
         qtyMT: order.qtyMT,

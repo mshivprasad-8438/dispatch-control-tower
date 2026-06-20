@@ -1,11 +1,11 @@
-const { createPlan } = require("../src/services/planService");
+const { createPlan } = require("../src/services/planningService");
 const { getState, resetState } = require("../src/data/store");
 
 beforeEach(() => {
   resetState();
 });
 
-describe("planService", () => {
+describe("planningService", () => {
   test("rejects a plan when vehicle is not available", () => {
     expect(() =>
       createPlan({

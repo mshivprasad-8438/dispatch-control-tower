@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a small full-stack dispatch planning app built for the take-home assignment. It lets a planner view available orders, assign them to vehicles, see live capacity updates, and save a plan that returns a loading sheet.
+This is a small full-stack dispatch planning app. It lets a planner view available orders, assign them to vehicles, see live capacity updates, and save a plan that returns a loading sheet.
 
 The solution uses in-memory state loaded from the provided JSON seed files. That keeps the app easy to run and review while still enforcing the required business rules correctly.
 

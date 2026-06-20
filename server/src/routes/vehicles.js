@@ -1,11 +1,10 @@
 const express = require("express");
-const { getState } = require("../data/store");
+const { getVehicles } = require("../data/store");
 
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  const state = getState();
-  res.json({ data: state.vehicles });
+  res.json({ data: getVehicles() });
 });
 
 module.exports = router;

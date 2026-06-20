@@ -49,6 +49,36 @@ describe("Dispatch Control Tower API", () => {
     expect(response.body.message).toBe("Vehicle capacity exceeded. Total 22 MT exceeds 20 MT.");
   });
 
+  test("rejects saving a plan when the vehicle is not available", async () => {
+    const response = await request(app).post("/api/plans").send({
+      vehicleNo: "AP28T-1188",
+      orderIds: ["O-5001"],
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Vehicle AP28T-1188 is not available for planning.");
+  });
+
+  test("rejects invalid plan payloads", async () => {
+    const response = await request(app).post("/api/plans").send({
+      vehicleNo: "",
+      orderIds: [],
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("vehicleNo is required.");
+  });
+
+  test("rejects malformed JSON with a safe error message", async () => {
+    const response = await request(app)
+      .post("/api/plans")
+      .set("Content-Type", "application/json")
+      .send("{");
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Invalid JSON payload.");
+  });
+
   test("saves a valid plan, returns loading sheet, hides assigned order, and marks vehicle planned", async () => {
     const saveResponse = await request(app).post("/api/plans").send({
       vehicleNo: "AP28T-7457",

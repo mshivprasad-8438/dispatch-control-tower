@@ -1,6 +1,6 @@
 const express = require("express");
 const validatePlanRequest = require("../middleware/validatePlanRequest");
-const { createPlan } = require("../services/planService");
+const { createPlan } = require("../services/planningService");
 
 const router = express.Router();
 
