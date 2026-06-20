@@ -4,13 +4,14 @@
 
 This is a small full-stack dispatch planning app. It lets a planner view available orders, assign them to vehicles, see live capacity updates, and save a plan that returns a loading sheet.
 
-The solution uses in-memory state loaded from the provided JSON seed files. That keeps the app easy to run and review while still enforcing the required business rules correctly.
+The solution now uses MongoDB for runtime persistence, while still using the provided `data/*.json` files as the seed source. On startup, the backend seeds Mongo only when the collections are empty, so refreshes and backend restarts do not lose saved plans.
 
 ## Architecture
 
 - `server/`
   - `Express` API
-  - in-memory store loaded from `data/*.json`
+  - `MongoDB + Mongoose`
+  - seed/import service that loads `data/*.json` into Mongo
   - business-rule services for credit, capacity, and plan validation
 - `client/`
   - `React + Vite`
@@ -21,7 +22,8 @@ Core backend services:
 
 - `creditService.js`
 - `capacityService.js`
-- `planService.js`
+- `planningService.js`
+- `seedService.js`
 
 ## Business Rules
 
@@ -81,6 +83,16 @@ Example error response:
 }
 ```
 
+### `POST /api/admin/reset-data`
+
+Admin-only reset endpoint. It clears runtime Mongo data and reloads the current JSON seed files.
+
+Required header:
+
+```text
+x-admin-reset-key: <ADMIN_RESET_KEY>
+```
+
 ## Run Instructions
 
 ### Option 1: Docker
@@ -95,15 +107,27 @@ Then open:
 
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:3001`
+- MongoDB: `mongodb://localhost:27017`
 
-### Option 2: Local Node
+Backend environment in Docker:
+
+- `MONGODB_URI=mongodb://mongo:27017/dispatch-control-tower`
+- `ADMIN_RESET_KEY=local-admin-reset-key`
+
+### Option 2: Local frontend + backend, Docker Mongo
+
+Start Mongo only:
+
+```bash
+docker compose up -d mongo
+```
 
 Backend:
 
 ```bash
 cd server
 npm install
-npm start
+MONGODB_URI=mongodb://127.0.0.1:27017/dispatch-control-tower npm start
 ```
 
 Frontend:
@@ -114,17 +138,26 @@ npm install
 npm run dev
 ```
 
+If you want to call the admin reset endpoint locally:
+
+```bash
+curl -X POST http://localhost:3001/api/admin/reset-data \
+  -H "x-admin-reset-key: local-admin-reset-key"
+```
+
 ## Run Tests
 
 ```bash
 cd server
+npm install
 npm test
 ```
 
 ## Assumptions
 
 - Single-user flow only
-- In-memory persistence is acceptable for this assignment
+- MongoDB is the runtime data store
+- JSON seed files remain the source of truth for reset/import
 - Once a plan is saved, the vehicle becomes `Planned`
 - Saved orders no longer appear in `GET /api/orders`
 - Currency is treated as integer rupees
@@ -132,12 +165,13 @@ npm test
 ## Tradeoffs
 
 - Used click/select-to-assign instead of drag-and-drop to keep the core workflow simpler and easier to validate.
-- Kept persistence in memory instead of adding a database because the assignment explicitly allows it.
+- Used a simple Mongoose model + service flow instead of repository/clean-architecture layers to keep the take-home easy to review.
+- Kept the admin reset path hidden from the UI and protected only by a shared secret header, which is enough for a demo/admin utility but not a production auth model.
 - Focused tests on business rules rather than broad UI coverage.
 
 ## Future Improvements
 
 - Add drag-and-drop assignment
 - Add frontend interaction tests
-- Add a reset/demo endpoint for faster manual retesting
-- Persist plans with a database if the assignment needed multi-session behavior
+- Add optimistic locking or transactions if concurrent planners become a requirement
+- Replace shared-secret admin reset with proper authentication/authorization

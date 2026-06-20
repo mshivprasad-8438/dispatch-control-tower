@@ -1,15 +1,11 @@
 const { CREDIT_STATUS, VEHICLE_STATUS } = require("../constants/statuses");
 const MESSAGES = require("../constants/messages");
-const {
-  getCustomers,
-  getOrders,
-  getPlans,
-  getVehicles,
-  getNextPlanNumber,
-  incrementNextPlanNumber,
-} = require("../data/store");
 const { getCreditStatus } = require("./creditService");
 const { exceedsVehicleCapacity, getTotalPlannedQuantity } = require("./capacityService");
+const Customer = require("../models/customerModel");
+const Order = require("../models/orderModel");
+const Plan = require("../models/planModel");
+const Vehicle = require("../models/vehicleModel");
 
 function createHttpError(status, message) {
   const error = new Error(message);
@@ -21,25 +17,18 @@ function generatePlanId(nextPlanNumber) {
   return `PLAN-${String(nextPlanNumber).padStart(4, "0")}`;
 }
 
-function buildLookupMap(items, keyName) {
-  return new Map(items.map((item) => [item[keyName], item]));
+function extractPlanSequence(planId) {
+  const [, suffix = "0"] = planId.split("PLAN-");
+  return Number.parseInt(suffix, 10) || 0;
 }
 
-function getOrdersByIds(orderIds, ordersById) {
-  return orderIds.map((orderId) => {
-    const order = ordersById.get(orderId);
-
-    if (!order) {
-      throw createHttpError(404, MESSAGES.ORDER_NOT_FOUND(orderId));
-    }
-
-    return order;
-  });
+async function getNextPlanId() {
+  const latestPlan = await Plan.findOne().sort({ createdAt: -1 }).lean();
+  const nextPlanNumber = latestPlan ? extractPlanSequence(latestPlan.planId) + 1 : 1;
+  return generatePlanId(nextPlanNumber);
 }
 
-function validateVehicle(vehicleNo, vehiclesByNumber) {
-  const vehicle = vehiclesByNumber.get(vehicleNo);
-
+function validateVehicle(vehicleNo, vehicle) {
   if (!vehicle) {
     throw createHttpError(404, MESSAGES.VEHICLE_NOT_FOUND(vehicleNo));
   }
@@ -49,6 +38,18 @@ function validateVehicle(vehicleNo, vehiclesByNumber) {
   }
 
   return vehicle;
+}
+
+function validateOrderIds(orderIds, ordersById) {
+  return orderIds.map((orderId) => {
+    const order = ordersById.get(orderId);
+
+    if (!order) {
+      throw createHttpError(404, MESSAGES.ORDER_NOT_FOUND(orderId));
+    }
+
+    return order;
+  });
 }
 
 function validateOrders(orders, customersById) {
@@ -71,25 +72,30 @@ function validateOrders(orders, customersById) {
   }
 }
 
-function createPlan(payload) {
-  const vehiclesByNumber = buildLookupMap(getVehicles(), "vehicleNo");
-  const ordersById = buildLookupMap(getOrders(), "orderId");
-  const customersById = buildLookupMap(getCustomers(), "customerId");
+async function createPlan(payload) {
+  const [vehicle, orders, customers] = await Promise.all([
+    Vehicle.findOne({ vehicleNo: payload.vehicleNo }),
+    Order.find({ orderId: { $in: payload.orderIds } }),
+    Customer.find(),
+  ]);
 
-  const vehicle = validateVehicle(payload.vehicleNo, vehiclesByNumber);
-  const orders = getOrdersByIds(payload.orderIds, ordersById);
+  const ordersById = new Map(orders.map((order) => [order.orderId, order]));
+  const customersById = new Map(customers.map((customer) => [customer.customerId, customer]));
 
-  validateOrders(orders, customersById);
+  validateVehicle(payload.vehicleNo, vehicle);
 
-  if (exceedsVehicleCapacity(orders, vehicle)) {
-    const totalLoadedMT = getTotalPlannedQuantity(orders);
+  const selectedOrders = validateOrderIds(payload.orderIds, ordersById);
+
+  validateOrders(selectedOrders, customersById);
+
+  if (exceedsVehicleCapacity(selectedOrders, vehicle)) {
+    const totalLoadedMT = getTotalPlannedQuantity(selectedOrders);
 
     throw createHttpError(400, MESSAGES.CAPACITY_EXCEEDED(totalLoadedMT, vehicle.capacityMT));
   }
 
-  const totalLoadedMT = getTotalPlannedQuantity(orders);
-  const planId = generatePlanId(getNextPlanNumber());
-  incrementNextPlanNumber();
+  const totalLoadedMT = getTotalPlannedQuantity(selectedOrders);
+  const planId = await getNextPlanId();
 
   const plan = {
     planId,
@@ -99,7 +105,7 @@ function createPlan(payload) {
       model: vehicle.model,
     },
     orderIds: payload.orderIds.slice(),
-    lineItems: orders.map((order) => ({
+    lineItems: selectedOrders.map((order) => ({
       orderId: order.orderId,
       product: order.product,
       qtyMT: order.qtyMT,
@@ -109,14 +115,19 @@ function createPlan(payload) {
     remainingMT: vehicle.capacityMT - totalLoadedMT,
   };
 
-  getPlans().push(plan);
-  vehicle.status = VEHICLE_STATUS.PLANNED;
+  await Plan.create(plan);
 
-  orders.forEach((order) => {
-    order.status = "ASSIGNED";
-    order.assignedPlanId = planId;
-    order.assignedVehicleNo = vehicle.vehicleNo;
-  });
+  vehicle.status = VEHICLE_STATUS.PLANNED;
+  await vehicle.save();
+
+  await Promise.all(
+    selectedOrders.map((order) => {
+      order.status = "ASSIGNED";
+      order.assignedPlanId = planId;
+      order.assignedVehicleNo = vehicle.vehicleNo;
+      return order.save();
+    })
+  );
 
   return plan;
 }

@@ -1,38 +1,52 @@
 const { createPlan } = require("../src/services/planningService");
-const { getState, resetState } = require("../src/data/store");
+const Order = require("../src/models/orderModel");
+const Vehicle = require("../src/models/vehicleModel");
+const { importSeedData } = require("../src/services/seedService");
+const { setupTestDatabase, teardownTestDatabase } = require("./support/mongoTestDb");
 
-beforeEach(() => {
-  resetState();
+let mongoServer;
+
+beforeAll(async () => {
+  mongoServer = await setupTestDatabase();
+});
+
+beforeEach(async () => {
+  await importSeedData();
+});
+
+afterAll(async () => {
+  await teardownTestDatabase(mongoServer);
 });
 
 describe("planningService", () => {
-  test("rejects a plan when vehicle is not available", () => {
-    expect(() =>
+  test("rejects a plan when vehicle is not available", async () => {
+    await expect(
       createPlan({
         vehicleNo: "AP28T-1188",
         orderIds: ["O-5001"],
       })
-    ).toThrow("Vehicle AP28T-1188 is not available for planning.");
+    ).rejects.toThrow("Vehicle AP28T-1188 is not available for planning.");
   });
 
-  test("rejects a plan when it contains a blocked order", () => {
-    expect(() =>
+  test("rejects a plan when it contains a blocked order", async () => {
+    await expect(
       createPlan({
         vehicleNo: "AP28T-7457",
         orderIds: ["O-5006"],
       })
-    ).toThrow("Order O-5006 is blocked.");
+    ).rejects.toThrow("Order O-5006 is blocked.");
   });
 
-  test("creates a valid plan and updates in-memory state", () => {
-    const plan = createPlan({
+  test("creates a valid plan and updates Mongo state", async () => {
+    const plan = await createPlan({
       vehicleNo: "AP16U-3321",
       orderIds: ["O-5002", "O-5005"],
     });
 
-    const state = getState();
-    const vehicle = state.vehicles.find((item) => item.vehicleNo === "AP16U-3321");
-    const order = state.orders.find((item) => item.orderId === "O-5002");
+    const [vehicle, order] = await Promise.all([
+      Vehicle.findOne({ vehicleNo: "AP16U-3321" }).lean(),
+      Order.findOne({ orderId: "O-5002" }).lean(),
+    ]);
 
     expect(plan).toMatchObject({
       planId: "PLAN-0001",

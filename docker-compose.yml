@@ -1,8 +1,21 @@
 services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
   backend:
     build:
       context: .
       dockerfile: server/Dockerfile
+    depends_on:
+      - mongo
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/dispatch-control-tower
+      ADMIN_RESET_KEY: local-admin-reset-key
     ports:
       - "3001:3001"
 
@@ -16,3 +29,6 @@ services:
       VITE_API_BASE_URL: http://localhost:3001
     ports:
       - "5173:5173"
+
+volumes:
+  mongo-data:

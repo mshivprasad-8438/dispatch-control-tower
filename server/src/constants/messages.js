@@ -2,6 +2,8 @@ const MESSAGES = {
   HEALTH_OK: "Dispatch Control Tower API is running",
   INTERNAL_SERVER_ERROR: "Internal server error",
   INVALID_JSON: "Invalid JSON payload.",
+  ADMIN_RESET_UNAUTHORIZED: "Unauthorized reset request.",
+  ADMIN_RESET_SUCCESS: "Database reset from seed data completed.",
   VEHICLE_NO_REQUIRED: "vehicleNo is required.",
   ORDER_IDS_REQUIRED: "orderIds must be a non-empty array.",
   ORDER_IDS_INVALID: "orderIds must contain valid order ids.",

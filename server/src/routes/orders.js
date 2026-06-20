@@ -1,19 +1,22 @@
 const express = require("express");
 const { CREDIT_STATUS } = require("../constants/statuses");
 const MESSAGES = require("../constants/messages");
-const { getCustomers, getOrders } = require("../data/store");
+const Customer = require("../models/customerModel");
+const Order = require("../models/orderModel");
 const { getCreditStatus } = require("../services/creditService");
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  const customers = getCustomers();
-  const orders = getOrders();
-  const customersById = new Map(customers.map((customer) => [customer.customerId, customer]));
+router.get("/", async (req, res, next) => {
+  try {
+    const [customers, orders] = await Promise.all([
+      Customer.find().lean(),
+      Order.find({ assignedPlanId: null }).lean(),
+    ]);
 
-  const openOrders = orders
-    .filter((order) => !order.assignedPlanId)
-    .map((order) => {
+    const customersById = new Map(customers.map((customer) => [customer.customerId, customer]));
+
+    const openOrders = orders.map((order) => {
       const customer = customersById.get(order.customerId);
       const credit = customer
         ? getCreditStatus(customer)
@@ -35,7 +38,10 @@ router.get("/", (req, res) => {
       };
     });
 
-  res.json({ data: openOrders });
+    return res.json({ data: openOrders });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 module.exports = router;

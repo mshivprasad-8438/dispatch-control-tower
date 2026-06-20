@@ -4,9 +4,9 @@ const { createPlan } = require("../services/planningService");
 
 const router = express.Router();
 
-router.post("/", validatePlanRequest, (req, res, next) => {
+router.post("/", validatePlanRequest, async (req, res, next) => {
   try {
-    const plan = createPlan(req.body);
+    const plan = await createPlan(req.body);
     return res.status(201).json({ data: plan });
   } catch (error) {
     return next(error);

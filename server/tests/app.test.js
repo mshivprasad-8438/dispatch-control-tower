@@ -1,9 +1,23 @@
 const request = require("supertest");
 const app = require("../src/app");
-const { resetState } = require("../src/data/store");
+const Order = require("../src/models/orderModel");
+const Plan = require("../src/models/planModel");
+const Vehicle = require("../src/models/vehicleModel");
+const { importSeedData } = require("../src/services/seedService");
+const { setupTestDatabase, teardownTestDatabase } = require("./support/mongoTestDb");
 
-beforeEach(() => {
-  resetState();
+let mongoServer;
+
+beforeAll(async () => {
+  mongoServer = await setupTestDatabase();
+});
+
+beforeEach(async () => {
+  await importSeedData();
+});
+
+afterAll(async () => {
+  await teardownTestDatabase(mongoServer);
 });
 
 describe("Dispatch Control Tower API", () => {
@@ -110,5 +124,40 @@ describe("Dispatch Control Tower API", () => {
 
     const vehicle = vehiclesResponse.body.data.find((item) => item.vehicleNo === "AP28T-7457");
     expect(vehicle.status).toBe("Planned");
+  });
+
+  test("rejects admin reset with an invalid secret key", async () => {
+    const response = await request(app)
+      .post("/api/admin/reset-data")
+      .set("x-admin-reset-key", "wrong-key");
+
+    expect(response.status).toBe(401);
+    expect(response.body.message).toBe("Unauthorized reset request.");
+  });
+
+  test("resets Mongo data from seed files with a valid admin key", async () => {
+    await request(app).post("/api/plans").send({
+      vehicleNo: "AP28T-7457",
+      orderIds: ["O-5001"],
+    });
+
+    const resetResponse = await request(app)
+      .post("/api/admin/reset-data")
+      .set("x-admin-reset-key", process.env.ADMIN_RESET_KEY);
+
+    expect(resetResponse.status).toBe(200);
+    expect(resetResponse.body.message).toBe("Database reset from seed data completed.");
+
+    const [order, vehicle, planCount] = await Promise.all([
+      Order.findOne({ orderId: "O-5001" }).lean(),
+      Vehicle.findOne({ vehicleNo: "AP28T-7457" }).lean(),
+      Plan.countDocuments(),
+    ]);
+
+    expect(order.assignedPlanId).toBeNull();
+    expect(order.assignedVehicleNo).toBeNull();
+    expect(order.status).toBe("PENDING");
+    expect(vehicle.status).toBe("Available");
+    expect(planCount).toBe(0);
   });
 });

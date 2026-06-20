@@ -1,5 +1,6 @@
 const cors = require("cors");
 const express = require("express");
+const adminRouter = require("./routes/admin");
 const MESSAGES = require("./constants/messages");
 const { errorHandler, notFoundHandler } = require("./middleware/errorHandler");
 const ordersRouter = require("./routes/orders");
@@ -19,6 +20,7 @@ app.get("/health", (req, res) => {
 app.use("/api/orders", ordersRouter);
 app.use("/api/vehicles", vehiclesRouter);
 app.use("/api/plans", plansRouter);
+app.use("/api/admin", adminRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

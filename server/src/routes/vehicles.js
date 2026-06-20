@@ -1,10 +1,15 @@
 const express = require("express");
-const { getVehicles } = require("../data/store");
+const Vehicle = require("../models/vehicleModel");
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.json({ data: getVehicles() });
+router.get("/", async (req, res, next) => {
+  try {
+    const vehicles = await Vehicle.find().lean();
+    return res.json({ data: vehicles });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 module.exports = router;
