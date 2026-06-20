@@ -54,7 +54,7 @@ describe("planningService", () => {
       capacityMT: 25,
       remainingMT: 11,
     });
-    expect(vehicle.status).toBe("Planned");
+    expect(vehicle.status).toBe("PLANNED");
     expect(order.assignedPlanId).toBe("PLAN-0001");
   });
 });

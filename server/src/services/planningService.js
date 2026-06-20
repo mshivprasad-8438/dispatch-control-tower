@@ -1,4 +1,4 @@
-const { CREDIT_STATUS, VEHICLE_STATUS } = require("../constants/statuses");
+const { CREDIT_STATUS, VEHICLE_STATUS_KEY, getVehicleStatusKey } = require("../constants/statuses");
 const MESSAGES = require("../constants/messages");
 const { getCreditStatus } = require("./creditService");
 const { exceedsVehicleCapacity, getTotalPlannedQuantity } = require("./capacityService");
@@ -33,7 +33,7 @@ function validateVehicle(vehicleNo, vehicle) {
     throw createHttpError(404, MESSAGES.VEHICLE_NOT_FOUND(vehicleNo));
   }
 
-  if (vehicle.status !== VEHICLE_STATUS.AVAILABLE) {
+  if (getVehicleStatusKey(vehicle.status) !== VEHICLE_STATUS_KEY.AVAILABLE) {
     throw createHttpError(400, MESSAGES.VEHICLE_NOT_AVAILABLE(vehicle.vehicleNo));
   }
 
@@ -117,7 +117,7 @@ async function createPlan(payload) {
 
   await Plan.create(plan);
 
-  vehicle.status = VEHICLE_STATUS.PLANNED;
+  vehicle.status = VEHICLE_STATUS_KEY.PLANNED;
   await vehicle.save();
 
   await Promise.all(

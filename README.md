@@ -105,7 +105,7 @@ docker compose up
 
 Then open:
 
-- Frontend: `http://localhost:5173`
+- Frontend: `http://localhost:5174`
 - Backend: `http://localhost:3001`
 - MongoDB: `mongodb://localhost:27017`
 

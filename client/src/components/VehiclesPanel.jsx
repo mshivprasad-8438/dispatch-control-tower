@@ -1,5 +1,5 @@
 import VehicleCard from "./VehicleCard";
-import { getDraftLoad, getDraftOrdersForVehicle } from "../utils/capacity";
+import { getDraftOrdersForVehicle, getVehicleLoadedMT } from "../utils/capacity";
 
 function VehiclesPanel({ vehicles, draftAssignments, onRemoveOrder, onSavePlan, savingVehicleNo, loading, error }) {
   if (loading) {
@@ -27,7 +27,7 @@ function VehiclesPanel({ vehicles, draftAssignments, onRemoveOrder, onSavePlan, 
             key={vehicle.vehicleNo}
             vehicle={vehicle}
             draftOrders={getDraftOrdersForVehicle(draftAssignments, vehicle.vehicleNo)}
-            loadedMT={getDraftLoad(draftAssignments, vehicle.vehicleNo)}
+            loadedMT={getVehicleLoadedMT(vehicle, draftAssignments)}
             onRemoveOrder={onRemoveOrder}
             onSavePlan={onSavePlan}
             saving={savingVehicleNo === vehicle.vehicleNo}

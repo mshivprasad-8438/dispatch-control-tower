@@ -10,8 +10,13 @@ const vehiclesRouter = require("./routes/vehicles");
 const app = express();
 
 app.disable("x-powered-by");
+app.set("etag", false);
 app.use(cors());
 app.use(express.json({ limit: "100kb" }));
+app.use("/api", (req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
 
 app.get("/health", (req, res) => {
   res.json({ message: MESSAGES.HEALTH_OK });

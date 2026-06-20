@@ -3,7 +3,9 @@ import OrderCard from "./OrderCard";
 function OrdersPanel({
   orders,
   availableVehicles,
+  draftAssignments,
   selectedVehicleByOrder,
+  highlightedOrderId,
   onVehicleChange,
   onAssign,
   loading,
@@ -34,7 +36,9 @@ function OrdersPanel({
             key={order.orderId}
             order={order}
             availableVehicles={availableVehicles}
+            draftAssignments={draftAssignments}
             selectedVehicleNo={selectedVehicleByOrder[order.orderId] || ""}
+            isHighlighted={highlightedOrderId === order.orderId}
             onVehicleChange={onVehicleChange}
             onAssign={onAssign}
           />

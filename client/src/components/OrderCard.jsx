@@ -1,17 +1,30 @@
+import { canAssignOrderToVehicle } from "../utils/capacity";
+import { CREDIT_STATUS } from "../constants/statuses";
+
 function OrderCard({
   order,
   availableVehicles,
+  draftAssignments,
   selectedVehicleNo,
+  isHighlighted,
   onVehicleChange,
   onAssign,
 }) {
-  const isBlocked = order.creditStatus === "BLOCKED";
-  const hasAvailableVehicles = availableVehicles.length > 0;
-  const assignDisabled = isBlocked || !selectedVehicleNo || !hasAvailableVehicles;
+  const isBlocked = order.creditStatus === CREDIT_STATUS.BLOCKED;
+  const hasAssignableVehicles = availableVehicles.some((vehicle) =>
+    canAssignOrderToVehicle(vehicle, order, draftAssignments)
+  );
+  const selectedVehicle = availableVehicles.find((vehicle) => vehicle.vehicleNo === selectedVehicleNo);
+  const selectedVehicleCanFit = selectedVehicle
+    ? canAssignOrderToVehicle(selectedVehicle, order, draftAssignments)
+    : false;
+  const assignDisabled = isBlocked || !selectedVehicleNo || !selectedVehicleCanFit;
 
   return (
     <article
-      className={`card order-card ${isBlocked ? "order-card--blocked" : ""}`}
+      className={`card order-card ${isBlocked ? "order-card--blocked" : ""} ${
+        isHighlighted ? "order-card--highlighted" : ""
+      }`}
       title={isBlocked ? order.creditReason : ""}
     >
       <div className="order-card__header">
@@ -49,14 +62,18 @@ function OrderCard({
         <select
           value={selectedVehicleNo}
           onChange={(event) => onVehicleChange(order.orderId, event.target.value)}
-          disabled={isBlocked || !hasAvailableVehicles}
+          disabled={isBlocked || !hasAssignableVehicles}
         >
           <option value="">Select vehicle</option>
-          {availableVehicles.map((vehicle) => (
-            <option key={vehicle.vehicleNo} value={vehicle.vehicleNo}>
+          {availableVehicles.map((vehicle) => {
+            const isDisabled = !canAssignOrderToVehicle(vehicle, order, draftAssignments);
+
+            return (
+              <option key={vehicle.vehicleNo} value={vehicle.vehicleNo} disabled={isDisabled}>
               {vehicle.vehicleNo} ({vehicle.capacityMT} MT)
-            </option>
-          ))}
+              </option>
+            );
+          })}
         </select>
 
         <button type="button" onClick={() => onAssign(order)} disabled={assignDisabled}>

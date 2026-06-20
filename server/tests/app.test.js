@@ -21,6 +21,13 @@ afterAll(async () => {
 });
 
 describe("Dispatch Control Tower API", () => {
+  test("serves dynamic API responses with no-store cache headers", async () => {
+    const response = await request(app).get("/api/orders");
+
+    expect(response.status).toBe(200);
+    expect(response.headers["cache-control"]).toBe("no-store");
+  });
+
   test("marks an order blocked when outstanding balance exceeds credit limit", async () => {
     const response = await request(app).get("/api/orders");
 
@@ -123,7 +130,9 @@ describe("Dispatch Control Tower API", () => {
     expect(ordersResponse.body.data.some((item) => item.orderId === "O-5001")).toBe(false);
 
     const vehicle = vehiclesResponse.body.data.find((item) => item.vehicleNo === "AP28T-7457");
-    expect(vehicle.status).toBe("Planned");
+    expect(vehicle.status).toBe("PLANNED");
+    expect(vehicle.statusKey).toBe("PLANNED");
+    expect(vehicle.statusLabel).toBe("Planned");
   });
 
   test("rejects admin reset with an invalid secret key", async () => {
@@ -157,7 +166,7 @@ describe("Dispatch Control Tower API", () => {
     expect(order.assignedPlanId).toBeNull();
     expect(order.assignedVehicleNo).toBeNull();
     expect(order.status).toBe("PENDING");
-    expect(vehicle.status).toBe("Available");
+    expect(vehicle.status).toBe("AVAILABLE");
     expect(planCount).toBe(0);
   });
 });

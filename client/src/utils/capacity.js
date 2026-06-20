@@ -9,8 +9,12 @@ export function getDraftLoad(draftAssignments, vehicleNo) {
   );
 }
 
+export function getVehicleLoadedMT(vehicle, draftAssignments) {
+  return (vehicle.currentLoadedMT || 0) + getDraftLoad(draftAssignments, vehicle.vehicleNo);
+}
+
 export function getRemainingCapacity(vehicle, draftAssignments) {
-  return vehicle.capacityMT - getDraftLoad(draftAssignments, vehicle.vehicleNo);
+  return vehicle.capacityMT - getVehicleLoadedMT(vehicle, draftAssignments);
 }
 
 export function canAssignOrderToVehicle(vehicle, order, draftAssignments) {
