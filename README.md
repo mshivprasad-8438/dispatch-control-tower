@@ -6,6 +6,22 @@ This is a small full-stack dispatch planning app. It lets a planner view availab
 
 The solution now uses MongoDB for runtime persistence, while still using the provided `data/*.json` files as the seed source. On startup, the backend seeds Mongo only when the collections are empty, so refreshes and backend restarts do not lose saved plans.
 
+## Demo
+
+### Dispatch Control Tower Dashboard
+
+![Dispatch Control Tower Dashboard](docs/assets/dispatch-control-tower-dashboard.png)
+
+### Dispatch Control Tower Loading Sheet
+
+![Dispatch Control Tower Loading Sheet](docs/assets/dispatch-control-tower-loading-sheet.png)
+
+### Demo Video
+
+[Watch the Dispatch Control Tower Demo Video](docs/assets/dispatch-control-tower-demo.webm)
+
+[![Dispatch Control Tower Demo Video](docs/assets/dispatch-control-tower-dashboard.png)](docs/assets/dispatch-control-tower-demo.webm)
+
 ## Architecture
 
 - `server/`
@@ -171,7 +187,6 @@ npm test
 
 ## Future Improvements
 
-- Add drag-and-drop assignment
 - Add frontend interaction tests
 - Add optimistic locking or transactions if concurrent planners become a requirement
 - Replace shared-secret admin reset with proper authentication/authorization
