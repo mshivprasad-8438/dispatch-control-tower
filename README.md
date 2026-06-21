@@ -18,9 +18,9 @@ The solution now uses MongoDB for runtime persistence, while still using the pro
 
 ### Demo Video
 
-[Watch the Dispatch Control Tower Demo Video](docs/assets/dispatch-control-tower-demo.webm)
+[Watch the Dispatch Control Tower Demo Video](docs/assets/dispatch-control-tower-demo.mp4)
 
-[![Dispatch Control Tower Demo Video](docs/assets/dispatch-control-tower-dashboard.png)](docs/assets/dispatch-control-tower-demo.webm)
+[![Dispatch Control Tower Demo Video](docs/assets/dispatch-control-tower-dashboard.png)](docs/assets/dispatch-control-tower-demo.mp4)
 
 ## Architecture
 
