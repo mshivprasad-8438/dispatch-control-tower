@@ -1,16 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getOrders, getVehicles, resetData, savePlan } from "./api";
 import AdminResetView from "./components/AdminResetView";
+import useAssignments from "./hooks/useAssignments";
 import LoadingSheetModal from "./components/LoadingSheetModal";
 import OrdersPanel from "./components/OrdersPanel";
 import StatusMessage from "./components/StatusMessage";
 import VehiclesPanel from "./components/VehiclesPanel";
-import { VEHICLE_STATUS_KEY } from "./constants/statuses";
-import {
-  canAssignOrderToVehicle,
-  getDraftAssignedOrderIds,
-  getRemainingCapacity,
-} from "./utils/capacity";
 
 const EMPTY_TOAST = { tone: "info", message: "" };
 const REDIRECT_TOAST_KEY = "dispatch-control-tower-toast";
@@ -20,9 +15,6 @@ function App() {
   const resetStartedRef = useRef(false);
   const [orders, setOrders] = useState([]);
   const [vehicles, setVehicles] = useState([]);
-  const [draftAssignments, setDraftAssignments] = useState({});
-  const [selectedVehicleByOrder, setSelectedVehicleByOrder] = useState({});
-  const [highlightedOrderId, setHighlightedOrderId] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState("");
   const [toast, setToast] = useState(EMPTY_TOAST);
@@ -99,6 +91,31 @@ function App() {
     }
   }
 
+  function showToast(tone, message) {
+    setToast({ tone, message });
+  }
+
+  const {
+    availableVehicles,
+    clearDraftAssignmentsForVehicle,
+    draftAssignments,
+    draggedAssignment,
+    handleAssign,
+    handleDeleteDrop,
+    handleDragEnd,
+    handleDragStart,
+    handleRemoveOrder,
+    handleVehicleChange,
+    highlightedOrderId,
+    selectedVehicleByOrder,
+    visibleOrders,
+  } = useAssignments({
+    orders,
+    vehicles,
+    showToast,
+    clearToast: () => setToast(EMPTY_TOAST),
+  });
+
   useEffect(() => {
     if (isResetRoute) {
       if (resetStartedRef.current) {
@@ -112,116 +129,6 @@ function App() {
 
     loadBoardData(true);
   }, []);
-
-  const availableVehicles = useMemo(
-    () => vehicles.filter((vehicle) => vehicle.statusKey === VEHICLE_STATUS_KEY.AVAILABLE),
-    [vehicles]
-  );
-
-  const visibleOrders = useMemo(() => {
-    const draftAssignedOrderIds = getDraftAssignedOrderIds(draftAssignments);
-    return orders.filter((order) => !draftAssignedOrderIds.has(order.orderId));
-  }, [draftAssignments, orders]);
-
-  useEffect(() => {
-    const ordersById = new Map(visibleOrders.map((order) => [order.orderId, order]));
-    const vehiclesByNumber = new Map(availableVehicles.map((vehicle) => [vehicle.vehicleNo, vehicle]));
-
-    setSelectedVehicleByOrder((current) => {
-      let hasChanges = false;
-      const next = {};
-
-      for (const [orderId, vehicleNo] of Object.entries(current)) {
-        const order = ordersById.get(orderId);
-        const vehicle = vehiclesByNumber.get(vehicleNo);
-
-        if (order && vehicle && canAssignOrderToVehicle(vehicle, order, draftAssignments)) {
-          next[orderId] = vehicleNo;
-        } else {
-          hasChanges = true;
-        }
-      }
-
-      return hasChanges ? next : current;
-    });
-  }, [availableVehicles, draftAssignments, visibleOrders]);
-
-  function handleVehicleChange(orderId, vehicleNo) {
-    if (highlightedOrderId === orderId) {
-      setHighlightedOrderId("");
-    }
-
-    setSelectedVehicleByOrder((current) => ({
-      ...current,
-      [orderId]: vehicleNo,
-    }));
-  }
-
-  function showToast(tone, message) {
-    setToast({ tone, message });
-  }
-
-  function showAssignError(orderId, message) {
-    setHighlightedOrderId(orderId);
-    showToast("error", message);
-  }
-
-  function handleAssign(order) {
-    const selectedVehicleNo = selectedVehicleByOrder[order.orderId];
-
-    if (!selectedVehicleNo) {
-      showAssignError(order.orderId, "Select a vehicle before assigning the order.");
-      return;
-    }
-
-    if (order.creditStatus === "BLOCKED") {
-      showAssignError(order.orderId, order.creditReason);
-      return;
-    }
-
-    const vehicle = vehicles.find((item) => item.vehicleNo === selectedVehicleNo);
-
-    if (!vehicle || vehicle.statusKey !== VEHICLE_STATUS_KEY.AVAILABLE) {
-      showAssignError(order.orderId, "Selected vehicle is not available.");
-      return;
-    }
-
-    if (!canAssignOrderToVehicle(vehicle, order, draftAssignments)) {
-      const remainingCapacity = getRemainingCapacity(vehicle, draftAssignments);
-      showAssignError(
-        order.orderId,
-        `Cannot assign ${order.orderId}. ${vehicle.vehicleNo} has only ${remainingCapacity} MT remaining.`
-      );
-      return;
-    }
-
-    setHighlightedOrderId("");
-    setToast(EMPTY_TOAST);
-    setDraftAssignments((current) => ({
-      ...current,
-      [selectedVehicleNo]: [...(current[selectedVehicleNo] || []), order],
-    }));
-    setSelectedVehicleByOrder((current) => ({
-      ...current,
-      [order.orderId]: "",
-    }));
-    showToast("success", `${order.orderId} added to ${selectedVehicleNo}.`);
-  }
-
-  function handleRemoveOrder(vehicleNo, orderId) {
-    setDraftAssignments((current) => {
-      const nextOrders = (current[vehicleNo] || []).filter((order) => order.orderId !== orderId);
-      const nextAssignments = { ...current, [vehicleNo]: nextOrders };
-
-      if (nextOrders.length === 0) {
-        delete nextAssignments[vehicleNo];
-      }
-
-      return nextAssignments;
-    });
-
-    showToast("success", `${orderId} removed from ${vehicleNo}.`);
-  }
 
   async function handleSavePlan(vehicleNo) {
     const draftOrders = draftAssignments[vehicleNo] || [];
@@ -241,11 +148,7 @@ function App() {
 
       setLoadingSheet(response.data);
       showToast("success", `Plan ${response.data.planId} saved successfully.`);
-      setDraftAssignments((current) => {
-        const nextAssignments = { ...current };
-        delete nextAssignments[vehicleNo];
-        return nextAssignments;
-      });
+      clearDraftAssignmentsForVehicle(vehicleNo);
       await loadBoardData(false);
     } catch (error) {
       showToast("error", error.message);
@@ -298,6 +201,10 @@ function App() {
           <VehiclesPanel
             vehicles={vehicles}
             draftAssignments={draftAssignments}
+            draggedAssignment={draggedAssignment}
+            onDeleteDrop={handleDeleteDrop}
+            onDragEnd={handleDragEnd}
+            onDragStart={handleDragStart}
             onRemoveOrder={handleRemoveOrder}
             onSavePlan={handleSavePlan}
             savingVehicleNo={savingVehicleNo}

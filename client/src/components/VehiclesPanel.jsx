@@ -1,7 +1,19 @@
 import VehicleCard from "./VehicleCard";
 import { getDraftOrdersForVehicle, getVehicleLoadedMT } from "../utils/capacity";
 
-function VehiclesPanel({ vehicles, draftAssignments, onRemoveOrder, onSavePlan, savingVehicleNo, loading, error }) {
+function VehiclesPanel({
+  vehicles,
+  draftAssignments,
+  draggedAssignment,
+  onDeleteDrop,
+  onDragEnd,
+  onDragStart,
+  onRemoveOrder,
+  onSavePlan,
+  savingVehicleNo,
+  loading,
+  error,
+}) {
   if (loading) {
     return <section className="panel">Loading vehicles...</section>;
   }
@@ -28,6 +40,10 @@ function VehiclesPanel({ vehicles, draftAssignments, onRemoveOrder, onSavePlan, 
             vehicle={vehicle}
             draftOrders={getDraftOrdersForVehicle(draftAssignments, vehicle.vehicleNo)}
             loadedMT={getVehicleLoadedMT(vehicle, draftAssignments)}
+            draggedAssignment={draggedAssignment}
+            onDeleteDrop={onDeleteDrop}
+            onDragEnd={onDragEnd}
+            onDragStart={onDragStart}
             onRemoveOrder={onRemoveOrder}
             onSavePlan={onSavePlan}
             saving={savingVehicleNo === vehicle.vehicleNo}

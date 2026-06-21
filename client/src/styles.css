@@ -172,6 +172,12 @@ select:disabled {
   margin-bottom: 14px;
 }
 
+.vehicle-card__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .order-card__meta,
 .order-card__actions,
 .vehicle-card__body {
@@ -346,6 +352,12 @@ select:disabled {
   gap: 8px;
 }
 
+.delete-dropzone__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
 .vehicle-card__stats {
   display: grid;
   gap: 8px;
@@ -361,6 +373,11 @@ select:disabled {
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
+  cursor: grab;
+}
+
+.vehicle-card__order-item:active {
+  cursor: grabbing;
 }
 
 .vehicle-card__order-content {
@@ -382,18 +399,6 @@ select:disabled {
   margin-top: 4px;
   font-size: 14px;
   color: #374151;
-}
-
-.vehicle-card__order-item .secondary-button {
-  align-self: center;
-  min-width: 88px;
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-
-.vehicle-card__order-item .secondary-button:hover {
-  background: #fee2e2;
 }
 
 .status-message {
@@ -516,6 +521,29 @@ select:disabled {
 
 .icon-button:hover {
   background: #e0e7ff;
+}
+
+.icon-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-button--delete,
+.icon-button--remove {
+  color: #b91c1c;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+}
+
+.icon-button--delete:hover,
+.icon-button--remove:hover {
+  background: #ffe4e6;
+}
+
+.icon-button--delete-active {
+  background: #fee2e2;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
 }
 
 .loading-sheet {
